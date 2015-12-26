@@ -1,11 +1,15 @@
-from flask import Flask
+from flask  import  Flask
+
+
+#do not touch
 app = Flask(__name__)
 
 wsgi_app = app.wsgi_app
+#end do not touch
+#import all routes from route.py
+from route import *;
 
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
+#server lauching code
 
 if __name__ == '__main__':
     import os
