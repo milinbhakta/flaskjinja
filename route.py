@@ -1,9 +1,12 @@
 from flask import Flask, url_for, request, render_template;
 from hello import app
 import os
+import redis
 #server/
 @app.route('/')
 def hello_world():
+    #connect to redis database
+    r = redis.StrictRedis(host = 'localhost', port=6379, db=0)
     createlink = "<a href='" + url_for('create') + "'>create a question</a>";
     return """<html>
                     <head>
