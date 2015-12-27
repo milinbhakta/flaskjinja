@@ -2,11 +2,13 @@ from flask import Flask, url_for, request, render_template;
 from hello import app
 import os
 import redis
+
+#connect to redis database
+r = redis.StrictRedis(host = 'localhost', port=6379, db=0,charset="utf-8",decode_responses=True)
 #server/
 @app.route('/')
 def hello_world():
-    #connect to redis database
-    r = redis.StrictRedis(host = 'localhost', port=6379, db=0)
+
     createlink = "<a href='" + url_for('create') + "'>create a question</a>";
     return """<html>
                     <head>
@@ -29,12 +31,10 @@ def create():
         question = request.form['Question']
         answer = request.form['Answer']
         #store data in datastorage
-        nh = open("data.txt","w")
-        nh.write(answer)
-        nh.close()
-        nh1 = open("ques.txt","w")
-        nh1.write(question)
-        nh1.close()
+        #key name will be what ever they type in :Question
+        r.set(title+':question',question)
+        r.set(title+':answer',answer)
+
         return render_template('CreatedQuestion.html', question = question);
     else:
         return "invalid request </h2>"
@@ -45,22 +45,19 @@ def question(title):
     if request.method == 'GET':
         #send the user form
         #read question from data store
-        nh1 = open("ques.txt","r")
-        ques = nh1.read(20)
-        nh1.close()
-        return render_template('AnswerQuestion.html',question = ques)
+        question = r.get(title+':question')
+
+        return render_template('AnswerQuestion.html',question = question)
     elif request.method == 'POST':
         #user has qttempted question. Check if they're correct
         submittedAnswer = request.form['submittedAnswer']
 
         #read answer from th data store
-        nhr = open("data.txt","r")
-        ans = nhr.read(20)
-        nhr.close()
+        answer = r.get(title+':answer')
 
-        if submittedAnswer == ans :
+        if submittedAnswer == answer :
             return render_template('correct.html')
         else:
-            return render_template('incorrect.html', submittedAnswer = submittedAnswer, Answer = ans)
+            return render_template('incorrect.html', submittedAnswer = submittedAnswer, Answer = answer)
     else:
         return "<h2>invalid request</h2>";
